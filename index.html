@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart E-Waste Guide — Prompt Assembler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #1B3A2F;
+    --forest-dark: #12281F;
+    --parchment: #F6F2E9;
+    --parchment-deep: #EDE6D6;
+    --charcoal: #20241F;
+    --amber: #BB6B39;
+    --amber-soft: #F1E1D2;
+    --border: #D8D0BC;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--parchment);
+    color: var(--charcoal);
+    font-family: 'IBM Plex Sans', sans-serif;
+    line-height: 1.5;
+  }
+
+  .wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  header {
+    margin-bottom: 40px;
+  }
+
+  .mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .mark svg { flex-shrink: 0; }
+
+  .mark span {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--forest);
+  }
+
+  h1 {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 12px;
+    color: var(--forest-dark);
+  }
+
+  header p {
+    font-size: 16px;
+    color: #4B5148;
+    max-width: 54ch;
+    margin: 0;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .step-label {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--amber);
+    font-weight: 500;
+  }
+
+  .step-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--forest-dark);
+  }
+
+  select, textarea {
+    width: 100%;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--parchment);
+    color: var(--charcoal);
+  }
+
+  select:focus, textarea:focus, button:focus-visible {
+    outline: 2px solid var(--forest);
+    outline-offset: 1px;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 88px;
+  }
+
+  .hint {
+    font-size: 13px;
+    color: #6B7268;
+    margin-top: 8px;
+  }
+
+  button.generate {
+    margin-top: 20px;
+    background: var(--forest);
+    color: #fff;
+    border: none;
+    padding: 13px 22px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'IBM Plex Sans', sans-serif;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button.generate:hover { background: var(--forest-dark); }
+
+  .output-card {
+    display: none;
+  }
+
+  .output-card.visible { display: block; }
+
+  #output {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    min-height: 220px;
+    background: var(--forest-dark);
+    color: #E7EFE9;
+    border-color: var(--forest-dark);
+  }
+
+  .output-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--forest);
+    color: var(--forest-dark);
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'IBM Plex Sans', sans-serif;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .btn-secondary:hover { background: var(--parchment-deep); }
+
+  .copied-msg {
+    font-size: 13px;
+    color: var(--forest-dark);
+    font-weight: 600;
+    align-self: center;
+    display: none;
+  }
+
+  .copied-msg.visible { display: inline; }
+
+  .iframe-wrap {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    height: 520px;
+  }
+
+  .iframe-wrap iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  .safety-note {
+    background: var(--amber-soft);
+    border: 1px solid var(--amber);
+    border-radius: 4px;
+    padding: 14px 16px;
+    font-size: 13.5px;
+    color: #5C3A22;
+    margin-top: 24px;
+  }
+
+  .safety-note strong { color: var(--amber); }
+
+  footer {
+    margin-top: 36px;
+    font-size: 13px;
+    color: #6B7268;
+  }
+
+  footer a { color: var(--forest-dark); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="mark">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M11 2C11 2 5 7.5 5 12.5C5 15.8137 7.68629 18.5 11 18.5C14.3137 18.5 17 15.8137 17 12.5C17 7.5 11 2 11 2Z" stroke="#1B3A2F" stroke-width="1.6"/>
+        <path d="M11 8.5V15" stroke="#1B3A2F" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <span>SMART E-WASTE GUIDE</span>
+    </div>
+    <h1>Turn any e-waste question into a ready-to-use AI prompt.</h1>
+    <p>Pick an item, describe the situation, and this tool assembles the full prompt — system instructions plus grounded knowledge base facts — so the AI answers safely and accurately.</p>
+  </header>
+
+  <div class="card">
+    <div class="step-label">
+      <span class="step-num">STEP 1</span>
+      <span class="step-title">What's the item?</span>
+    </div>
+    <select id="itemSelect">
+      <option value="smartphone">Smartphone (old/broken)</option>
+      <option value="laptop">Laptop (old/broken)</option>
+      <option value="battery">Laptop/phone battery (Li-ion)</option>
+      <option value="charger">Charger</option>
+      <option value="cable">Cable (USB, HDMI, etc.)</option>
+      <option value="earphones">Earphones/headphones</option>
+      <option value="keyboard">Keyboard/mouse</option>
+      <option value="escooter">Electric scooter/e-scooty battery</option>
+      <option value="other">Other/general small electronics</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <div class="step-label">
+      <span class="step-num">STEP 2</span>
+      <span class="step-title">What's your question or situation?</span>
+    </div>
+    <textarea id="userQuestion" placeholder="e.g. My laptop battery is swollen, what should I do?"></textarea>
+    <div class="hint">Describe what's happening in your own words — the more detail, the better the guidance.</div>
+    <button class="generate" onclick="generatePrompt()">Generate prompt</button>
+  </div>
+
+  <div class="card output-card" id="outputCard">
+    <div class="step-label">
+      <span class="step-num">STEP 3</span>
+      <span class="step-title">Copy this, then paste it into the chat below</span>
+    </div>
+    <textarea id="output" readonly></textarea>
+    <div class="output-actions">
+      <button class="btn-secondary" onclick="copyOutput()">Copy to clipboard</button>
+      <span class="copied-msg" id="copiedMsg">Copied</span>
+    </div>
+  </div>
+
+  <div class="card output-card" id="chatCard">
+    <div class="step-label">
+      <span class="step-num">STEP 4</span>
+      <span class="step-title">Get your answer</span>
+    </div>
+    <p class="hint" style="margin-top:0;">Hugging Face doesn't allow this particular chat to be embedded inside other websites, so it opens in a new tab instead — your copied text (Step 3) is still what you'll paste in there.</p>
+    <a class="btn-secondary" href="https://huggingface.co/spaces/ibm-granite/granite-3.1-8b-instruct" target="_blank" rel="noopener" style="display:inline-flex;">Open Granite chat &#8594;</a>
+  </div>
+
+  <footer>
+    Built for the 1M1B AI for Sustainability internship (IBM SkillsBuild &amp; AICTE) &middot; SDG 12: Responsible Consumption and Production
+  </footer>
+
+</div>
+
+<script>
+const SYSTEM_PROMPT = `You are the Smart E-Waste Guide — an AI assistant that helps users
+identify electronic waste items and gives them safe, responsible
+guidance on reuse, recycling, or disposal.
+
+RULES YOU MUST FOLLOW:
+
+1. ONLY use facts from the "KNOWLEDGE BASE" text provided to you in
+   this conversation. Do not use outside knowledge about e-waste
+   disposal, and do not guess or make up facts.
+
+2. If the item the user asks about is NOT in the knowledge base, say
+   so honestly, and give only general safe-disposal advice (e.g.
+   "take it to an authorized e-waste collection center") instead of
+   inventing specific details.
+
+2b. If the user describes a SYMPTOM or SITUATION that is not
+    explicitly covered in the knowledge base (e.g. a specific screen
+    color, sound, smell, or error), do NOT diagnose the cause or
+    speculate on technical details (e.g. do not guess what a symptom
+    "indicates" or "means", and do not make judgments like "no longer
+    fit for resale" unless the knowledge base states this directly).
+    Simply acknowledge that you don't have specific information about
+    that symptom, and fall back to the general safety and disposal
+    guidance for that item category instead.
+
+3. NEVER give instructions on how to open, repair, dismantle, modify,
+   or otherwise physically manipulate any battery or electronic
+   device — even if the user asks directly. Redirect them to a
+   manufacturer or authorized technician instead.
+
+4. For batteries (phone, laptop, or e-scooter/e-scooty), always check
+   if the user has mentioned signs of damage (swelling, leaking,
+   heat, smoke, cracks, water exposure). If so, prioritize safety
+   instructions first, before anything else.
+
+5. Think step-by-step before answering, using this process:
+   Step 1 — Identify what item the user is asking about.
+   Step 2 — Check the knowledge base for a matching entry.
+   Step 3 — Check if this item/situation involves a safety risk
+            (especially batteries).
+   Step 4 — Form your answer using only Category, Reuse, Handling,
+            Disposal, and Special notes from that entry.
+   Step 5 — If safety-critical, state the safety warning clearly
+            before the disposal advice.
+
+6. Keep answers clear, simple, and short — avoid technical jargon.
+
+7. Always remind the user that this is general guidance, and for
+   serious/damaged battery situations they should contact the
+   manufacturer or a certified technician directly.`;
+
+const KNOWLEDGE_BASE = {
+  smartphone: `ITEM: Smartphone (Old/Broken)
+- Category: E-waste — contains valuable and hazardous materials (lithium battery, circuit board metals)
+- Reuse: If still working, donate, resell, or trade in through manufacturer buy-back programs
+- Handling: Do NOT throw in regular trash; remove SIM/SD card and back up data before disposal
+- Disposal: Hand over to a CPCB-authorized collection center, registered recycler, or the manufacturer's official take-back/buyback program — never with regular household trash (as per India's E-Waste (Management) Rules, 2022)
+- Why it matters: Contains lithium battery (fire risk) and toxic materials (lead, mercury) that contaminate soil/water if landfilled
+- Special notes: If the screen is cracked or battery is swollen, handle gently and avoid pressure on the battery area`,
+
+  laptop: `ITEM: Laptop (Old/Broken)
+- Category: E-waste — hazardous and recyclable materials mixed (battery, circuit boards, plastic, metals)
+- Reuse: If functional, donate, resell, or repurpose (e.g., school donation programs)
+- Handling: Do NOT throw in regular trash; back up and wipe personal data first
+- Disposal: Hand over to a CPCB-authorized recycler or the manufacturer's official take-back program — never with regular household trash (as per India's E-Waste (Management) Rules, 2022)
+- Why it matters: Circuit boards contain heavy metals; battery poses fire risk if crushed or punctured
+- Special notes: If the laptop won't power on or battery is swollen, do not attempt to open or remove the battery yourself`,
+
+  battery: `ITEM: Laptop/Phone Battery (Li-ion)
+- Category: Hazardous e-waste (contains lithium, cobalt)
+- Reuse: Do NOT reuse if swollen, punctured, or leaking
+- Handling: Never open, crush, puncture, or attempt to repair
+- Disposal: Hand over to a CPCB-authorized collection center or the manufacturer's official drop-off program — never with regular household trash (as per India's E-Waste (Management) Rules, 2022)
+- Why it matters: Li-ion batteries can catch fire or explode if damaged or improperly discarded
+- Special notes: If damaged/swollen — stop using immediately, keep away from heat and sunlight, contact manufacturer or certified e-waste handler right away`,
+
+  charger: `ITEM: Charger
+- Category: E-waste — mostly recyclable (plastic, copper wiring, small circuit board)
+- Reuse: If working, keep as spare or donate with a compatible device
+- Handling: Do NOT throw in regular trash; keep cord untangled and dry before drop-off
+- Disposal: Hand over to a CPCB-authorized e-waste collection point or retailer take-back bin (often collected alongside cables) — never with regular household trash
+- Why it matters: Copper and plastic can be recovered and reused; reduces landfill waste
+- Special notes: Frayed or damaged cords should not be used — dispose of promptly to avoid electrical hazard`,
+
+  cable: `ITEM: Cable (USB, HDMI, etc.)
+- Category: E-waste — low hazard, high recyclability (copper, plastic)
+- Reuse: If working, keep as spare or donate
+- Handling: Do NOT throw in regular trash; bundle similar cables together for drop-off
+- Disposal: Hand over to a CPCB-authorized e-waste collection point or electronics store take-back bin — never with regular household trash
+- Why it matters: Copper recovery reduces the need for new mining; plastic waste otherwise persists for decades
+- Special notes: None — low safety risk compared to batteries`,
+
+  earphones: `ITEM: Earphones/Headphones
+- Category: E-waste — mixed materials (plastic, small wiring, sometimes a small battery in wireless models)
+- Reuse: If working, keep, donate, or resell
+- Handling: Do NOT throw in regular trash; wireless/Bluetooth models may contain a small battery — treat with the same caution as batteries above
+- Disposal: Hand over to a CPCB-authorized e-waste collection point; wired and wireless models can usually go together — never with regular household trash
+- Why it matters: Small size makes them easy to forget about, but they still contain non-biodegradable plastics and metals
+- Special notes: If a wireless earbud case or earbud feels swollen or hot, treat it like a damaged battery — do not continue using it`,
+
+  keyboard: `ITEM: Keyboard / Mouse
+- Category: E-waste — low hazard (plastic casing, circuit board, wiring)
+- Reuse: If working, keep, donate, or resell
+- Handling: Do NOT throw in regular trash; remove batteries first if it's a wireless model
+- Disposal: Hand over to a CPCB-authorized e-waste collection point — never with regular household trash
+- Why it matters: Plastic casings take decades to break down; circuit boards contain recoverable metals
+- Special notes: Any removable batteries should be disposed of separately (see Battery entry)`,
+
+  escooter: `ITEM: Electric Scooter / E-Scooty Battery
+- Category: Hazardous e-waste — large-format lithium battery pack
+- Reuse: Do NOT reuse, repurpose, or attempt to "revive" a damaged or aged battery pack yourself
+- Handling: Never open, disassemble, modify, or attempt to repair — large battery packs carry a much higher fire risk than small device batteries
+- Disposal: Contact the manufacturer, an authorized service center, or a certified large-battery/EV recycler registered under India's E-Waste (Management) Rules, 2022 — do not treat like household e-waste
+- Why it matters: E-scooter batteries store much more energy than phone/laptop batteries; damage or improper handling can cause serious fires
+- Special notes: If the battery is swollen, leaking, unusually hot, or was involved in a crash/water exposure, stop using it immediately, keep it away from people and flammable material, and contact the manufacturer or a qualified technician — do not attempt any handling yourself`,
+
+  other: `ITEM: Other/General Small Electronics (e.g., remote controls, calculators, small gadgets)
+- Category: E-waste — varies by item, generally low-to-moderate hazard
+- Reuse: If working, keep, donate, or resell
+- Handling: Do NOT throw in regular trash; remove any batteries first
+- Disposal: Hand over to a CPCB-authorized general e-waste collection point — never with regular household trash
+- Why it matters: Even small electronics contain metals and plastics that shouldn't go to landfill
+- Special notes: If unsure what category an item falls into, treat it as general e-waste and recommend a collection center rather than guessing about hazards`
+};
+
+function generatePrompt() {
+  const item = document.getElementById('itemSelect').value;
+  const question = document.getElementById('userQuestion').value.trim() || '(no question entered yet)';
+  const kb = KNOWLEDGE_BASE[item];
+
+  const fullPrompt = `${SYSTEM_PROMPT}\n\nKNOWLEDGE BASE:\n${kb}\n\nUSER QUESTION:\n${question}`;
+
+  document.getElementById('output').value = fullPrompt;
+  document.getElementById('outputCard').classList.add('visible');
+  document.getElementById('chatCard').classList.add('visible');
+  document.getElementById('copiedMsg').classList.remove('visible');
+  document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyOutput() {
+  const output = document.getElementById('output');
+  output.focus();
+  output.select();
+  output.setSelectionRange(0, output.value.length);
+
+  let copied = false;
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(output.value).then(() => showCopied()).catch(() => fallbackCopy());
+  } else {
+    fallbackCopy();
+  }
+
+  function fallbackCopy() {
+    try {
+      copied = document.execCommand('copy');
+    } catch (err) {
+      copied = false;
+    }
+    if (copied) {
+      showCopied();
+    } else {
+      alert('Automatic copy isn\'t available here. The text is already selected — just press Ctrl+C (or Cmd+C on Mac) to copy it.');
+    }
+  }
+
+  function showCopied() {
+    const msg = document.getElementById('copiedMsg');
+    msg.classList.add('visible');
+    setTimeout(() => msg.classList.remove('visible'), 2000);
+  }
+}
+</script>
+
+</body>
+</html>
